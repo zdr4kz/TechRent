@@ -12,17 +12,29 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { getConnection, create } = require('../config/database.js')
+const { create, read } = require('../config/database.js')
 
 // POST /auth/registro - cria um novo usuário
 const registro = async (req, res) => {
   try{
     const { nome, email, senha } = req.body
 
-    const salt = await bcrypt.genSalt(10);
 
+    //  VERIFICA SE TEM UM EMAIL EXISTENTE
+    const user = await read("usuarios")
+    if(user.email = email){
+      return res.status(400).json({
+        sucesso: false,
+        mensagem: "email já cadastrado!"
+      })
+    }
+    
+    // CRIPTOGRAFA A SENHA
+    const salt = await bcrypt.genSalt(10);
     const senhaCriptografada = await bcrypt.hash(senha, salt)
     
+
+    // CRIA O ARQUIVO DATA COM A SENHA JÁ CRIPTOGRAFA E COM NIVEL DE ACESSO CLIENTE
     const data = {
       nome: nome,
       email: email,
@@ -30,9 +42,9 @@ const registro = async (req, res) => {
       nivel_acesso: "cliente"
     }
 
-     const resultado = await create("usuarios", data)
 
-
+    // CRIA O USUÁRIO NO BANCO 
+    await create("usuarios", data)
     res.status(200).json({
         sucesso: true,
         mensagem: "você foi registrado com sucesso!"

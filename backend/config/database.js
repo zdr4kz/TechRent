@@ -29,6 +29,22 @@ async function getConnection() {
   return pool.getConnection();
 }
 
+async function read(table, where = null){
+  
+  const connection = await getConnection();
+  try{
+    let sql = `SELECT * FROM ${table}`
+    if(where){
+      sql += ` WHERE ${where}`
+    }
+    const [rows] = await connection.execute(sql)
+    return rows
+
+  }finally{
+    connection.release()
+  }
+}
+
 async function create(table, data) {
 
   const connection = await getConnection();
@@ -50,5 +66,6 @@ async function create(table, data) {
 
 export {
   getConnection,
+  read,
   create
 }
