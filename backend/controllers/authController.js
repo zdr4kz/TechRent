@@ -22,7 +22,7 @@ const registro = async (req, res) => {
 
     //  VERIFICA SE TEM UM EMAIL EXISTENTE
     const user = await read("usuarios")
-    if(user.email = email){
+    if(user[0].email == email){
       return res.status(400).json({
         sucesso: false,
         mensagem: "email já cadastrado!"
