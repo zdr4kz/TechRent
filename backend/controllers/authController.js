@@ -12,12 +12,45 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/database');
+const { getConnection, create } = require('../config/database.js')
 
 // POST /auth/registro - cria um novo usuário
 const registro = async (req, res) => {
+  try{
+    const { nome, email, senha } = req.body
+
+    const salt = await bcrypt.genSalt(10);
+
+    const senhaCriptografada = await bcrypt.hash(senha, salt)
+    
+    const data = {
+      nome: nome,
+      email: email,
+      senha: senhaCriptografada,
+      nivel_acesso: "cliente"
+    }
+
+     const resultado = await create("usuarios", data)
+
+
+    res.status(200).json({
+        sucesso: true,
+        mensagem: "você foi registrado com sucesso!"
+    })
+
+  } 
+  catch(e) {
+    res.status(500).json({
+      sucesso: false,
+      mensagem: "erro no sistema",
+      erro: e
+    })
+  } 
+  
+
+
   // TODO
-  res.json({ mensagem: 'registro - não implementado' });
+  
 };
 
 // POST /auth/login - autentica e retorna JWT

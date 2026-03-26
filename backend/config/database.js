@@ -4,7 +4,7 @@
 // O mysql2 é usado por ter suporte a Promises (async/await),
 // o que facilita muito o código assíncrono no Node.js.
 
-const mysql = require('mysql2/promise');
+import mysql from 'mysql2/promise';
 
 // Cria um "pool" de conexões.
 // Um pool reutiliza conexões abertas ao invés de abrir uma nova a cada query,
@@ -19,8 +19,36 @@ const pool = mysql.createPool({
   // Número máximo de conexões simultâneas no pool
   connectionLimit: 10,
 
+  queueLimit:0,
+
   // Retorna valores numéricos como números JS (não como strings)
   typeCast: true,
 });
 
-module.exports = pool;
+async function getConnection() {
+  return pool.getConnection();
+}
+
+async function create(table, data) {
+
+  const connection = await getConnection();
+
+  try{
+    const columns = Object.keys(data).join(', ')
+    const placeholder = Array(Object.keys(data).length).fill('?').join(', ')
+    const sql = `INSERT INTO ${table} (${columns}) VALUES (${placeholder})`
+    const values = Object.values(data)
+    const [result] = await connection.execute(sql, values)
+    return result.insertId  
+
+  }
+  finally{
+    connection.release()
+  }
+  
+}
+
+export {
+  getConnection,
+  create
+}
