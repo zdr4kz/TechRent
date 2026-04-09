@@ -29,27 +29,27 @@ const registro = async (req, res) => {
         mensagem: "email já cadastrado!"
       })
     }
-
+    
     // CRIPTOGRAFA A SENHA
     const salt = await bcrypt.genSalt(10);
     const senhaCriptografada = await bcrypt.hash(senha, salt)
+    
+
+      // CRIA O ARQUIVO DATA COM A SENHA JÁ CRIPTOGRAFA E COM NIVEL DE ACESSO CLIENTE
+      const data = {
+        nome: nome,
+        email: email,
+        senha: senhaCriptografada,
+        nivel_acesso: "cliente"
+      }
 
 
-    // CRIA O ARQUIVO DATA COM A SENHA JÁ CRIPTOGRAFA E COM NIVEL DE ACESSO CLIENTE
-    const data = {
-      nome: nome,
-      email: email,
-      senha: senhaCriptografada,
-      nivel_acesso: "cliente"
-    }
 
-
-
-    // // CRIA O USUÁRIO NO BANCO 
+    // CRIA O USUÁRIO NO BANCO 
     await create("usuarios", data)
     res.status(200).json({
-      sucesso: true,
-      mensagem: "você foi registrado com sucesso!"
+        sucesso: true,
+        mensagem: "você foi registrado com sucesso!"
     })
 
   }
@@ -63,7 +63,8 @@ const registro = async (req, res) => {
 
 
 
-
+  // TODO
+  
 };
 
 // POST /auth/login - autentica e retorna JWT
