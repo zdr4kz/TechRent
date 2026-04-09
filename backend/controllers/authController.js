@@ -12,27 +12,28 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { create, read } = require('../config/database.js')
+const { create, read } = require('../config/database');
 
 // POST /auth/registro - cria um novo usuário
 const registro = async (req, res) => {
-  try{
+  try {
     const { nome, email, senha } = req.body
 
 
     //  VERIFICA SE TEM UM EMAIL EXISTENTE
-    const user = await read("usuarios")
-    if(user[0].email == email){
+    const user = await read("usuarios", `email = '${email}'`)
+
+    if (user != 0) {
       return res.status(400).json({
         sucesso: false,
         mensagem: "email já cadastrado!"
       })
     }
-    
+
     // CRIPTOGRAFA A SENHA
     const salt = await bcrypt.genSalt(10);
     const senhaCriptografada = await bcrypt.hash(senha, salt)
-    
+
 
     // CRIA O ARQUIVO DATA COM A SENHA JÁ CRIPTOGRAFA E COM NIVEL DE ACESSO CLIENTE
     const data = {
@@ -43,32 +44,77 @@ const registro = async (req, res) => {
     }
 
 
-    // CRIA O USUÁRIO NO BANCO 
+
+    // // CRIA O USUÁRIO NO BANCO 
     await create("usuarios", data)
     res.status(200).json({
-        sucesso: true,
-        mensagem: "você foi registrado com sucesso!"
+      sucesso: true,
+      mensagem: "você foi registrado com sucesso!"
     })
 
-  } 
-  catch(e) {
+  }
+  catch (e) {
     res.status(500).json({
       sucesso: false,
       mensagem: "erro no sistema",
       erro: e
     })
-  } 
-  
+  }
 
 
-  // TODO
-  
+
+
 };
 
 // POST /auth/login - autentica e retorna JWT
 const login = async (req, res) => {
-  // TODO
-  res.json({ mensagem: 'login - não implementado' });
-};
+
+  try {
+    const { email, senha } = req.body
+
+    const user = await read("usuarios", `email = '${email}'`)
+    if (user.length == 0) {
+      return res.status(400).json({
+        sucesso: false,
+        mensagem: "email ou senha inválidos!"
+      })
+    }
+    const senhaValida = await bcrypt.compare(senha, user[0].senha)
+    if (senhaValida == false) {
+      return res.status(400).json({
+        sucesso: false,
+        mensagem: "email ou senha inválidos!"
+      })
+    }
+
+    const payload = {
+      id: user[0].id,
+      nome: user[0].nome,
+      email: user[0].email,
+      nivel_acesso: user[0].nivel_acesso
+    }
+
+    const secret = process.env.JWT_SECRET
+
+    const token = jwt.sign(payload, secret, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    })
+
+    return res.status(200).json({
+      sucesso: true,
+      mensagem: "login bem-sucedido!",
+      token: token
+    })
+  }
+  catch (e) {
+    res.status(500).json({
+      sucesso: false,
+      mensagem: "erro no sistema",
+      erro: e
+    })
+  }
+}
+
+
 
 module.exports = { registro, login };
