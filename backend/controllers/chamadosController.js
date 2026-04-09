@@ -7,14 +7,27 @@
 //   aberto -> em_atendimento -> resolvido
 //                           -> cancelado
 
-const db = require('../config/database');
+const { read } = require('../config/database');
 
 // GET /chamados - lista chamados
 //   admin/técnico -> todos os chamados
 //   cliente       -> apenas os seus (WHERE cliente_id = req.usuario.id)
 const listar = async (req, res) => {
-  // TODO
-  res.json({ mensagem: 'listar chamados - não implementado' });
+
+  if(req.usuario.nivel_acesso == "admin" || req.usuario.nivel_acesso == "tecnico") {
+    return res.json({
+      mensagem: "listar todos os chamados - não implementado (admin, tecnico)"
+    })
+  }
+  if(req.usuario.nivel_acesso == "cliente") {
+    return res.json({
+      mensagem: "listar chamados do cliente " + req.usuario.id + " - não implementado"
+    })
+  } else {
+    return res.json({
+      mensagem: "listar todos os chamados - não implementado"
+    })
+  }
 };
 
 // GET /chamados/:id - retorna um chamado pelo ID
