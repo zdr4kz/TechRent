@@ -7,7 +7,7 @@
 //   aberto -> em_atendimento -> resolvido
 //                           -> cancelado
 
-const { read } = require('../config/database');
+const { read } = require('../config/database.js');
 
 // GET /chamados - lista chamados
 //   admin/técnico -> todos os chamados
@@ -15,13 +15,23 @@ const { read } = require('../config/database');
 const listar = async (req, res) => {
 
   if(req.usuario.nivel_acesso == "admin" || req.usuario.nivel_acesso == "tecnico") {
+
+    const chamados = await read("chamados")
+
     return res.json({
-      mensagem: "listar todos os chamados - não implementado (admin, tecnico)"
+      sucesso: true,
+      mensagem: "listado todos os chamados",
+      data: chamados
     })
   }
   if(req.usuario.nivel_acesso == "cliente") {
+
+    const chamados = await read("chamados", `cliente_id = ${req.usuario.id}`)
+
     return res.json({
-      mensagem: "listar chamados do cliente " + req.usuario.id + " - não implementado"
+      sucesso: true,
+      mensagem: "listado todos os chamados do cliente",
+      data : chamados
     })
   } else {
     return res.json({
