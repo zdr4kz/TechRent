@@ -12,6 +12,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cors = require('cors');
 
 // ---- Importação das rotas ----
 const authRoutes         = require('./routes/authRoutes');
@@ -26,10 +27,16 @@ const app = express();
 
 // Permite que o Express leia o corpo das requisições em JSON
 app.use(express.json());
+app.use(cors());
 
-// TODO (opcional): adicionar cors se o frontend rodar em outra porta
-// const cors = require('cors');
-// app.use(cors());
+// Middleware para tratar erros de body
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('[Erro de Body]', err.message);
+    return res.status(400).json({ sucesso: false, mensagem: 'Formato JSON inválido' });
+  }
+  next();
+});
 
 // ---- Registro das rotas ----
 // Cada prefixo aponta para um arquivo de rotas separado
@@ -46,7 +53,7 @@ app.get('/', (req, res) => {
 });
 
 // ---- Inicialização do servidor ----
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);

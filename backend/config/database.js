@@ -29,6 +29,16 @@ async function getConnection() {
   return pool.getConnection();
 }
 
+async function readQuery(sql, params = []) {
+  const connection = await getConnection();
+  try {
+    const [rows] = await connection.execute(sql, params);
+    return rows;
+  } finally {
+    connection.release();
+  }
+}
+
 async function read(table, where = null){
   
   const connection = await getConnection();
@@ -67,5 +77,6 @@ async function create(table, data) {
 export {
   getConnection,
   read,
-  create
+  create,
+  readQuery
 }

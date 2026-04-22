@@ -72,7 +72,6 @@ const login = async (req, res) => {
 
   try {
     const { email, senha } = req.body
-
     const user = await read("usuarios", `email = '${email}'`)
     if (user.length == 0) {
       return res.status(400).json({
