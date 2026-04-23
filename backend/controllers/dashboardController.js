@@ -1,23 +1,48 @@
-// =============================================
-// CONTROLLER DE DASHBOARD
-// =============================================
-// Usa as VIEWS do banco para retornar dados agregados.
-// TODO (alunos): implementar cada função abaixo.
+const { read, readQuery } = require('../config/database');
 
-const db = require('../config/database');
-
-// GET /dashboard/admin - resumo geral de chamados e equipamentos (apenas admin)
-// Usa as views: view_resumo_chamados e view_resumo_equipamentos
 const resumoAdmin = async (req, res) => {
-  // TODO
-  res.json({ mensagem: 'resumoAdmin - não implementado' });
+  try {
+    const chamadosData = await readQuery(`SELECT status, total FROM view_resumo_chamados`);
+    const equipamentosData = await readQuery(`SELECT status, total FROM view_resumo_equipamentos`);
+    const usuariosData = await readQuery(`SELECT nivel_acesso, COUNT(*) as total FROM usuarios GROUP BY nivel_acesso`);
+    const ultimosChamados = await readQuery(`
+      SELECT c.id, c.titulo, c.prioridade, c.status,
+             u.nome as cliente, e.nome as equipamento, c.aberto_em
+      FROM chamados c
+      JOIN usuarios u ON c.cliente_id = u.id
+      JOIN equipamentos e ON c.equipamento_id = e.id
+      ORDER BY c.aberto_em DESC
+      LIMIT 5
+    `);
+
+    res.json({ success: true, data: { chamados: chamadosData, equipamentos: equipamentosData, usuarios: usuariosData, ultimosChamados } });
+  } catch (error) {
+    console.error('Erro ao buscar resumo admin:', error);
+    res.status(500).json({ success: false, message: 'Erro ao buscar resumo do dashboard' });
+  }
 };
 
-// GET /dashboard/tecnico - chamados abertos/em andamento (técnico/admin)
-// Usa a view: view_painel_tecnico
 const painelTecnico = async (req, res) => {
-  // TODO
-  res.json({ mensagem: 'painelTecnico - não implementado' });
+  try {
+    const chamados = await readQuery(`SELECT * FROM view_painel_tecnico`);
+    res.json({ success: true, data: chamados });
+  } catch (error) {
+    console.error('Erro ao buscar painel técnico:', error);
+    res.status(500).json({ success: false, message: 'Erro ao buscar painel técnico' });
+  }
 };
 
-module.exports = { resumoAdmin, painelTecnico };
+const stats = async (req, res) => {
+  try {
+    const totalStatus = await readQuery(`SELECT status, COUNT(*) as count FROM chamados GROUP BY status`);
+    const equipStatus = await readQuery(`SELECT status, COUNT(*) as count FROM equipamentos GROUP BY status`);
+    const prioridade = await readQuery(`SELECT prioridade, COUNT(*) as count FROM chamados GROUP BY prioridade`);
+
+    res.json({ success: true, data: { chamadosPorStatus: totalStatus, equipamentosPorStatus: equipStatus, chamadosPorPrioridade: prioridade } });
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error);
+    res.status(500).json({ success: false, message: 'Erro ao buscar estatísticas' });
+  }
+};
+
+module.exports = { resumoAdmin, painelTecnico, stats };

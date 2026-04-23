@@ -555,14 +555,6 @@ export default function DashboardChamadosCliente() {
                     </div>
 
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        {usandoMock && (
-                            <div style={{
-                                background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)",
-                                borderRadius: 6, padding: "4px 10px", fontSize: 11, color: "#FBBF24", fontWeight: 500,
-                            }}>
-                                Modo demonstração
-                            </div>
-                        )}
                         <button onClick={() => setMostrarNovo(true)} style={{
                             background: C.accent, color: "#fff", border: "none", borderRadius: 8,
                             padding: "7px 14px", fontWeight: 600, fontSize: 13, cursor: "pointer",

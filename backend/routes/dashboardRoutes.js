@@ -13,4 +13,7 @@ router.get('/admin', autenticar, autorizar('admin'), ctrl.resumoAdmin);
 // Painel do técnico com chamados abertos (usa view_painel_tecnico)
 router.get('/tecnico', autenticar, autorizar('admin', 'tecnico'), ctrl.painelTecnico);
 
+// Estatísticas gerais
+router.get('/stats', autenticar, ctrl.stats);
+
 module.exports = router;
